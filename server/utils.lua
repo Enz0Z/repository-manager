@@ -1,5 +1,3 @@
-GH_BASE_URI = 'https://api.github.com/'
-REPOS_FORMAT_URI = GH_BASE_URI .. 'repos/%s/%s'
 RESOURCES_PATH = ''
 
 CreateThread(function()
@@ -84,18 +82,22 @@ function Get(url)
 			print('GET (' .. url .. '):', code, body, headers)
 			p:resolve(false, code, body, headers)
 		end
-	end, 'GET', '[]', headers or {
+	end, 'GET', '[]', {
 		['Content-Type'] = 'text/html;charset=UTF-8',
-		['User-Agent'] = 'request',
 		['Authorization'] = (Config.AuthKey ~= '' and 'token ' .. Config.AuthKey or nil)
 	})
 	return Citizen.Await(p)
 end
 
-function GitHub(url)
+function GitHub(url, branch)
 	url = url:gsub('https://', '')
+	local api = 'https://api.github.com/repos/%s/%s'
 	local components = table.build(url:split('/'))
-	local responseRaw = Get(REPOS_FORMAT_URI:format(components[2], components[3]))
+
+	if branch then
+		api = api .. '?ref=' .. branch
+	end
+	local responseRaw = Get(api:format(components[2], components[3]))
 
 	if not responseRaw then
 		return false

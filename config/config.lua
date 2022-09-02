@@ -5,8 +5,9 @@ Config.Verbose = true
 
 Config.Repositories = {
     --[[{
-        name = 'fivem-github-manager', -- required
-        url = 'https://github.com/Enz0Z/fivem-github-manager', -- required
+        name = 'REPO', -- required
+        url = 'https://github.com/NAME/REPO', -- required
+        branch = 'master', -- optional, by default in GitHub is "master"
         destination = '[test]', -- This is inside your resources folder (resources/[test]) -- required
         ignore = { -- optional
             'README.md', -- ignore only the file

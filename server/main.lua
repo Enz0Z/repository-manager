@@ -23,7 +23,7 @@ CreateThread(function()
 		if repository.auto_update == nil then
 			repository.auto_update = true
 		end
-		local github = GitHub(repository.url)
+		local github = GitHub(repository.url, repository.branch)
 		local updated = false
 
 		if github and repository.auto_update then
