@@ -1,3 +1,4 @@
+local base64 = load(LoadResourceFile(GetCurrentResourceName(), 'server/base64.lua'))()
 local cache = setmetatable({}, {
 	__index = function(object, key)
 		local raw = json.decode(LoadResourceFile(GetCurrentResourceName(), '.cache') or '{}')
@@ -55,6 +56,8 @@ CreateThread(function()
 				local files = service:archive()
 
 				for __, file in ipairs(files) do
+					file.raw = base64.decode(file.raw)
+
 					if repository.replace and repository.replace[file.path] then
 						if type(repository.replace[file.path]) == 'table' then
 							for ____, replace in ipairs(repository.replace[file.path]) do

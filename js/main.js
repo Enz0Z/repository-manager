@@ -25,7 +25,7 @@ exports('getFilesInZip', async (path, ignore) => {
 					}
 				}
 				if (write) {
-					await zip.files[filename].async('string').then(function (raw) {
+					await zip.files[filename].async('base64').then(function (raw) {
 						files.push({
 							path: file_path,
 							raw: raw
