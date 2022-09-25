@@ -2,6 +2,11 @@ Config = {}
 
 Config.Verbose = true
 
+Config.Artifact = {
+	-- Check if the server artifact is outdated
+	check = true
+}
+
 Config.Repositories = {
 	--[[{
 		name = 'REPO', -- required

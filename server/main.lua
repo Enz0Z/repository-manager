@@ -16,6 +16,22 @@ local cache = setmetatable({}, {
 })
 
 CreateThread(function()
+	if Config.Artifact.check then
+		local raw = Get('https://changelogs-live.fivem.net/api/changelog/versions/' .. (os.getenv('OS') == 'Windows_NT' and 'windows' or 'linux') .. '/server')
+
+		if not raw then
+			print('Cannot retrieve artifact version from fivem endpoint.')
+			return
+		end
+		local changelog = json.decode(raw)
+		local current = exports[GetCurrentResourceName()]:getBuild()
+		local last = changelog.latest
+
+		if tonumber(current) ~= tonumber(last) then
+			print('Server artifact is outdated (^1' .. current .. ' ^7-> ^2' .. last .. '^7).')
+			print('Download link: ' .. changelog.latest_download)
+		end
+	end
 	for _, repository in ipairs(Config.Repositories) do
 		if repository.auto_start == nil then
 			repository.auto_start = true

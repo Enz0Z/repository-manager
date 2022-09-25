@@ -41,3 +41,16 @@ exports('getFilesInZip', async (path, ignore) => {
 exports('createPath', async (path) => {
 	fs.mkdirSync(path.substring(0, path.lastIndexOf('/') + 1), { recursive: true });
 })
+
+exports('getBuild', async () => {
+	var version = GetConvar('version');
+
+	try {
+		const regex = /v1\.0\.0\.(\d{4,5})\s*/;
+		const res = regex.exec(version);
+
+		return parseInt(res[1]);
+	} catch (error) {
+		return 0;
+	}
+})
