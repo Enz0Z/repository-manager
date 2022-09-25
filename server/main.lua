@@ -23,60 +23,39 @@ CreateThread(function()
 		if repository.auto_update == nil then
 			repository.auto_update = true
 		end
-		local github = GitHub(repository.url, repository.branch)
+		local service = GetService(repository)
 		local updated = false
 
-		if github and repository.auto_update then
-			local commit = github:last()
+		if service and repository.auto_update then
 			local destination = RESOURCES_PATH .. '/' .. repository.destination .. '/' .. repository.name
 
-			if commit['sha'] ~= cache[repository.name] then
-				print(repository.name .. ' is outdated (^1' .. (cache[repository.name] or 'unknown') .. ' ^7-> ^2' .. commit['sha'] .. '^7), updating...')
+			if service.last_commit ~= cache[repository.name] then
+				print(repository.name .. ' is outdated (^1' .. (cache[repository.name] or 'unknown') .. ' ^7-> ^2' .. service.last_commit .. '^7), updating...')
 				if os.getenv('OS') == 'Windows_NT' then
 					os.execute(('rmdir %s /s /q'):format(destination:gsub('/', '\\')))
 				else
 					os.execute(('rm -rf %s'):format(destination))
 				end
-				local files = github:tree()
+				local files = service:archive()
 
 				for __, file in ipairs(files) do
-					local write = true
-
-					for ___, name in ipairs(repository.ignore or {}) do
-						if name:endsWith('/') and file.path:startsWith(name) then
-							write = false
-							break
-						end
-						if file.path == name then
-							write = false
-							break
-						end
-					end
-					if write then
-						local raw = Get(file.raw)
-
-						if repository.replace and repository.replace[file.path] then
-							if type(repository.replace[file.path]) == 'table' then
-								for ____, replace in ipairs(repository.replace[file.path]) do
-									raw = string.gsub(raw, replace[1], replace[2])
-								end
-							else
-								raw = repository.replace[file.path]
+					if repository.replace and repository.replace[file.path] then
+						if type(repository.replace[file.path]) == 'table' then
+							for ____, replace in ipairs(repository.replace[file.path]) do
+								file.raw = string.gsub(file.raw, replace[1], replace[2])
 							end
-						end
-						Write(destination .. '/' .. file.path, raw)
-						if Config.Verbose then
-							print(repository.name .. ' saved ' .. file.path .. ' [' .. __ .. '/' .. #files .. '].')
-						end
-						Wait(50)
-					else
-						if Config.Verbose then
-							print(repository.name .. ' skipped ' .. file.path .. ' [' .. __ .. '/' .. #files .. '].')
+						else
+							file.raw = repository.replace[file.path]
 						end
 					end
+					Write(destination .. '/' .. file.path, file.raw)
+					if Config.Verbose then
+						print(repository.name .. ' saved ' .. file.path .. ' [' .. __ .. '/' .. #files .. '].')
+					end
+					Wait(50)
 				end
-				print(repository.name .. ' updated to commit ^2' .. commit['sha'] .. '^7.')
-				cache[repository.name] = commit['sha']
+				print(repository.name .. ' updated to commit ^2' .. service.last_commit .. '^7.')
+				cache[repository.name] = service.last_commit
 				updated = true
 			else
 				print(repository.name .. ' is up to date.')
@@ -93,4 +72,5 @@ CreateThread(function()
 			end
 		end
 	end
+	print('All repositories up to date.')
 end)

@@ -38,110 +38,94 @@ function table.build(iter)
 	return t_k, t_v
 end
 
-function Write(destination, raw, fail)
+function Write(destination, raw)
 	if os.getenv('OS') == 'Windows_NT' then
-		local path = destination:gsub('/', '\\')
-		local directories = table.build(path:split('\\'))
-
-		for i = 1, #directories - 1 do
-			os.execute('mkdir "' .. table.concat(directories, '\\', 1, i) .. '"')
-		end
-		local file = io.open(path, 'wb')
+		exports[GetCurrentResourceName()]:createPath(destination);
+		local file = io.open(destination:gsub('/', '\\'), 'wb')
 
 		if file then
 			file:write(raw)
 			file:close()
-		else
-			print(file)
 		end
 	else
-		local path = destination:gsub('/', '//'):gsub('////', '//')
-		local directories = table.build(path:split('//'))
-
-		for i = 1, #directories - 1 do
-			os.execute('mkdir "' .. table.concat(directories, '//', 1, i) .. '"')
-		end
-		local file = io.open(path, 'wb')
+		exports[GetCurrentResourceName()]:createPath(destination);
+		local file = io.open(destination:gsub('/', '//'):gsub('////', '//'), 'wb')
 
 		if file then
 			file:write(raw)
 			file:close()
-		else
-			print(file)
 		end
 	end
 end
 
-function Get(url)
+function Get(url, headers)
 	local p = promise:new()
 
-	PerformHttpRequest(url, function(code, body, headers)
+	PerformHttpRequest(url, function(code, body, _headers)
 		if code == 200 then
 			p:resolve(body)
 		else
-			print('GET (' .. url .. '):', code, body, headers)
-			p:resolve(false, code, body, headers)
+			print('GET (' .. url .. '):', code, body, json.encode(_headers))
+			p:resolve(false)
 		end
-	end, 'GET', '[]', {
-		['Content-Type'] = 'text/html;charset=UTF-8',
-		['Authorization'] = (Config.AuthKey ~= '' and 'token ' .. Config.AuthKey or nil)
-	})
+	end, 'GET', '[]', headers)
 	return Citizen.Await(p)
 end
 
-function GitHub(url, branch)
-	url = url:gsub('https://', '')
-	local api = 'https://api.github.com/repos/%s/%s'
-	local components = table.build(url:split('/'))
+function GetService(repository)
+	local components = table.build(string.gsub(repository.url, 'https://', ''):split('/'))
+	local last_commit = '000000000'
 
-	if branch then
-		api = api .. '?ref=' .. branch
-	end
-	local responseRaw = Get(api:format(components[2], components[3]))
+	if string.find(repository.url, 'github') then
+		if repository.token and repository.token ~= '' then
+			repository.token = 'token ' .. repository.token
+		end
+		local response = Get('https://api.github.com/repos/' .. components[2] .. '/' .. components[3] .. '/commits/' .. (repository.branch or 'master'), {
+			['Authorization'] = repository.token
+		})
 
-	if not responseRaw then
-		return false
-	end
-	local response = json.decode(responseRaw)
+		if not response then
+			print('Could not retrieve last commit from ' .. repository.url .. ' (' .. repository.branch .. '): ' .. response)
+			return false
+		end
+		local contents = json.decode(response)
+		last_commit = contents.sha
+	elseif string.find(repository.url, 'gitlab') then
+		if repository.token and repository.token ~= '' then
+			repository.token = 'Bearer ' .. repository.token
+		end
+		local response = Get('https://gitlab.com/api/v4/projects/' .. components[2] .. '%2F' .. components[3] .. '/repository/commits?ref_name=' .. (repository.branch or 'master'), {
+			['Authorization'] = repository.token
+		})
 
-	if response.message == 'Not Found' then
-		print('Repository not found:', url)
-		return false
+		if not response then
+			print('Could not retrieve last commit from ' .. repository.url .. ' (' .. repository.branch .. '): ' .. response)
+			return false
+		end
+		local contents = json.decode(response)
+		last_commit = contents[1].id
 	end
 
 	return setmetatable(
 		{
-			response = response
+			repository = repository,
+			components = components,
+			last_commit = last_commit
 		},
 		{
 			__index = {
-				last = function(self, contents_url)
-					local contentRaw = Get(contents_url or string.gsub(self.response.commits_url, '{/sha}', ''))
-					local contents = json.decode(contentRaw)
+				archive = function(self)
+					local url = ''
 
-					return contents[1]
-				end,
-				tree = function(self, contents_url)
-					local contentRaw = Get(contents_url or string.gsub(self.response.contents_url, '{%+path}', ''))
-					local contents = json.decode(contentRaw)
-					local tree = {}
-
-					for _, content in pairs(contents) do
-						if content.type == 'file' then
-							table.insert(tree, {
-								name = content.name,
-								path = content.path,
-								raw = content.download_url
-							})
-						elseif content.type == 'dir' then
-							local dir = self:tree(content.url)
-
-							for _, v in pairs(dir) do
-								table.insert(tree, v)
-							end
-						end
+					if string.find(self.repository.url, 'github') then
+						url = 'https://github.com/' .. self.components[2] .. '/' .. self.components[3] .. '/archive/' .. self.last_commit .. '.zip'
+					elseif string.find(self.repository.url, 'gitlab') then
+						url = 'https://gitlab.com/api/v4/projects/' .. self.components[2] .. '%2F' .. self.components[3] .. '/repository/archive.zip?sha=' .. self.last_commit
 					end
-					return tree
+					Write(GetResourcePath(GetCurrentResourceName()) .. '/.dump', Get(url, {
+						['Authorization'] = self.repository.token
+					}))
+					return exports[GetCurrentResourceName()]:getFilesInZip(GetResourcePath(GetCurrentResourceName()) .. '/.dump', self.repository.ignore)
 				end
 			}
 		}
