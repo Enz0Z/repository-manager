@@ -40,7 +40,7 @@ end
 
 function Write(destination, raw)
 	if os.getenv('OS') == 'Windows_NT' then
-		exports[GetCurrentResourceName()]:createPath(destination);
+		exports[GetCurrentResourceName()]:createPath(destination)
 		local file = io.open(destination:gsub('/', '\\'), 'wb')
 
 		if file then
@@ -48,7 +48,7 @@ function Write(destination, raw)
 			file:close()
 		end
 	else
-		exports[GetCurrentResourceName()]:createPath(destination);
+		exports[GetCurrentResourceName()]:createPath(destination)
 		local file = io.open(destination:gsub('/', '//'):gsub('////', '//'), 'wb')
 
 		if file then
@@ -65,7 +65,7 @@ function Get(url, headers)
 		if code == 200 then
 			p:resolve(body)
 		else
-			print('GET (' .. url .. '):', code, body, json.encode(_headers))
+			print('^7GET (' .. url .. '):', code, body, json.encode(_headers))
 			p:resolve(false)
 		end
 	end, 'GET', '[]', headers)
@@ -85,7 +85,7 @@ function GetService(repository)
 		})
 
 		if not response then
-			print('Could not retrieve last commit from ' .. repository.url .. ' (' .. repository.branch .. '): ' .. response)
+			print('^7Could not retrieve last commit from ' .. repository.url .. ' (' .. repository.branch .. '): ' .. response .. '.')
 			return false
 		end
 		local contents = json.decode(response)
@@ -99,7 +99,7 @@ function GetService(repository)
 		})
 
 		if not response then
-			print('Could not retrieve last commit from ' .. repository.url .. ' (' .. repository.branch .. '): ' .. response)
+			print('^7Could not retrieve last commit from ' .. repository.url .. ' (' .. repository.branch .. '): ' .. response .. '.')
 			return false
 		end
 		local contents = json.decode(response)

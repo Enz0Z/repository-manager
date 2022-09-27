@@ -21,7 +21,7 @@ CreateThread(function()
 		local raw = Get('https://changelogs-live.fivem.net/api/changelog/versions/' .. (os.getenv('OS') == 'Windows_NT' and 'windows' or 'linux') .. '/server')
 
 		if not raw then
-			print('Cannot retrieve artifact version from fivem endpoint.')
+			print('^7Cannot retrieve artifact version from fivem endpoint.')
 			return
 		end
 		local changelog = json.decode(raw)
@@ -29,8 +29,8 @@ CreateThread(function()
 		local last = changelog.latest
 
 		if tonumber(current) ~= tonumber(last) then
-			print('Server artifact is outdated (^1' .. current .. ' ^7-> ^2' .. last .. '^7).')
-			print('Download link: ' .. changelog.latest_download)
+			print('^7Server artifact is outdated (^1' .. current .. ' ^7-> ^2' .. last .. '^7).')
+			print('^5> ' .. changelog.latest_download)
 		end
 	end
 	for _, repository in ipairs(Config.Repositories) do
@@ -47,7 +47,8 @@ CreateThread(function()
 			local destination = RESOURCES_PATH .. '/' .. repository.destination .. '/' .. repository.name
 
 			if service.last_commit ~= cache[repository.name] then
-				print(repository.name .. ' is outdated (^1' .. (cache[repository.name] or 'unknown') .. ' ^7-> ^2' .. service.last_commit .. '^7), updating...')
+				print('^7' .. repository.name .. ' is outdated (^1' .. (cache[repository.name] or 'unknown') .. ' ^7-> ^2' .. service.last_commit .. '^7), updating...')
+				print('^5> ' .. repository.url .. '/compare/' .. (cache[repository.name] or 'unknown') .. '..' .. service.last_commit)
 				if os.getenv('OS') == 'Windows_NT' then
 					os.execute(('rmdir %s /s /q'):format(destination:gsub('/', '\\')))
 				else
@@ -69,15 +70,15 @@ CreateThread(function()
 					end
 					Write(destination .. '/' .. file.path, file.raw)
 					if Config.Verbose then
-						print(repository.name .. ' saved ' .. file.path .. ' [' .. __ .. '/' .. #files .. '].')
+						print('^7' .. repository.name .. ' saved ' .. file.path .. ' [' .. __ .. '/' .. #files .. '].')
 					end
 					Wait(50)
 				end
-				print(repository.name .. ' updated to commit ^2' .. service.last_commit .. '^7.')
+				print('^7' .. repository.name .. ' updated to commit ^2' .. service.last_commit .. '^7.')
 				cache[repository.name] = service.last_commit
 				updated = true
 			else
-				print(repository.name .. ' is up to date.')
+				print('^7' .. repository.name .. ' is up to date.')
 			end
 		end
 		if repository.auto_start then
@@ -91,5 +92,5 @@ CreateThread(function()
 			end
 		end
 	end
-	print('All repositories up to date.')
+	print('^7All repositories up to date.')
 end)
