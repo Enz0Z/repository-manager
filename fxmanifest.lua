@@ -12,5 +12,6 @@ server_scripts {
 }
 
 escrow_ignore {
+	'server/base64.lua',
 	'config.lua'
 }

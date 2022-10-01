@@ -117,7 +117,7 @@ function GetService(repository)
 					Write(GetResourcePath(GetCurrentResourceName()) .. '/.dump', Get(url, {
 						['Authorization'] = self.repository.token
 					}))
-					return exports[GetCurrentResourceName()]:getFilesInZip(GetResourcePath(GetCurrentResourceName()) .. '/.dump', self.repository.ignore)
+					return exports[GetCurrentResourceName()]:getFilesInZip(GetResourcePath(GetCurrentResourceName()) .. '/.dump', self.repository.ignore or {})
 				end
 			}
 		}
