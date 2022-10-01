@@ -1,5 +1,5 @@
 const fs = require('fs');
-const JSZip = require('./js/jszip.min.js');
+const JSZip = require('./server/jszip.min.js');
 
 exports('getFilesInZip', async (path, ignore) => {
 	return new Promise((resolve) => {

@@ -5,13 +5,12 @@ lua54 'yes'
 server_only 'yes'
 
 server_scripts {
-	'js/main.js',
-
-	'config/config.lua',
+	'config.lua',
+	'server/main.js',
 	'server/utils.lua',
 	'server/main.lua'
 }
 
 escrow_ignore {
-	'config/config.lua'
+	'config.lua'
 }

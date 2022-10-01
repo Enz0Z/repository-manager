@@ -22,14 +22,6 @@ function string:split(pat)
 	return function() if st then return getter(st, g()) end end
 end
 
-function string:startsWith(start)
-	return self:sub(1, #start) == start
-end
-
-function string:endsWith(ending)
-	return ending == "" or self:sub(-#ending) == ending
-end
-
 function table.build(iter)
 	if type(iter) ~= 'function' then return nil end
 	local t_k = {}
