@@ -30,7 +30,7 @@ CreateThread(function()
 
 		if tonumber(current) ~= tonumber(last) then
 			print('^7Server artifact is outdated (^1' .. current .. ' ^7-> ^2' .. last .. '^7).')
-			print('^5> ' .. changelog.latest_download)
+			print('^5> ' .. changelog.latest_download .. '^7')
 		end
 	end
 	for _, repository in ipairs(Config.Repositories) do
@@ -44,11 +44,11 @@ CreateThread(function()
 		local updated = false
 
 		if service then
-			local destination = RESOURCES_PATH .. '/' .. repository.destination .. '/' .. repository.name
+			local destination = RESOURCES_PATH .. '/' .. repository.destination
 
 			if service.last_commit ~= cache[repository.name] then
 				print('^7' .. repository.name .. ' is outdated (^1' .. (cache[repository.name] or 'unknown') .. ' ^7-> ^2' .. service.last_commit .. '^7), updating...')
-				print('^5> ' .. repository.url .. '/compare/' .. (cache[repository.name] or 'unknown') .. '..' .. service.last_commit)
+				print('^5> ' .. repository.url .. '/compare/' .. (cache[repository.name] or 'unknown') .. '..' .. service.last_commit .. '^7')
 				if repository.auto_update then
 					if os.getenv('OS') == 'Windows_NT' then
 						os.execute(('rmdir %s /s /q'):format(destination:gsub('/', '\\')))
