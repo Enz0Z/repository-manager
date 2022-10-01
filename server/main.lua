@@ -43,40 +43,42 @@ CreateThread(function()
 		local service = GetService(repository)
 		local updated = false
 
-		if service and repository.auto_update then
+		if service then
 			local destination = RESOURCES_PATH .. '/' .. repository.destination .. '/' .. repository.name
 
 			if service.last_commit ~= cache[repository.name] then
 				print('^7' .. repository.name .. ' is outdated (^1' .. (cache[repository.name] or 'unknown') .. ' ^7-> ^2' .. service.last_commit .. '^7), updating...')
 				print('^5> ' .. repository.url .. '/compare/' .. (cache[repository.name] or 'unknown') .. '..' .. service.last_commit)
-				if os.getenv('OS') == 'Windows_NT' then
-					os.execute(('rmdir %s /s /q'):format(destination:gsub('/', '\\')))
-				else
-					os.execute(('rm -rf %s'):format(destination))
-				end
-				local files = service:archive()
+				if repository.auto_update then
+					if os.getenv('OS') == 'Windows_NT' then
+						os.execute(('rmdir %s /s /q'):format(destination:gsub('/', '\\')))
+					else
+						os.execute(('rm -rf %s'):format(destination))
+					end
+					local files = service:archive()
 
-				for __, file in ipairs(files) do
-					file.raw = base64.decode(file.raw)
+					for __, file in ipairs(files) do
+						file.raw = base64.decode(file.raw)
 
-					if repository.replace and repository.replace[file.path] then
-						if type(repository.replace[file.path]) == 'table' then
-							for ____, replace in ipairs(repository.replace[file.path]) do
-								file.raw = string.gsub(file.raw, replace[1], replace[2])
+						if repository.replace and repository.replace[file.path] then
+							if type(repository.replace[file.path]) == 'table' then
+								for ____, replace in ipairs(repository.replace[file.path]) do
+									file.raw = string.gsub(file.raw, replace[1], replace[2])
+								end
+							else
+								file.raw = repository.replace[file.path]
 							end
-						else
-							file.raw = repository.replace[file.path]
 						end
+						Write(destination .. '/' .. file.path, file.raw)
+						if Config.Verbose then
+							print('^7' .. repository.name .. ' saved ' .. file.path .. ' [' .. __ .. '/' .. #files .. '].')
+						end
+						Wait(50)
 					end
-					Write(destination .. '/' .. file.path, file.raw)
-					if Config.Verbose then
-						print('^7' .. repository.name .. ' saved ' .. file.path .. ' [' .. __ .. '/' .. #files .. '].')
-					end
-					Wait(50)
+					print('^7' .. repository.name .. ' updated to commit ^2' .. service.last_commit .. '^7.')
+					cache[repository.name] = service.last_commit
+					updated = true
 				end
-				print('^7' .. repository.name .. ' updated to commit ^2' .. service.last_commit .. '^7.')
-				cache[repository.name] = service.last_commit
-				updated = true
 			else
 				print('^7' .. repository.name .. ' is up to date.')
 			end
