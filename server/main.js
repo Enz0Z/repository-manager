@@ -3,7 +3,6 @@ const JSZip = require('./server/jszip.min.js');
 
 exports('getFilesInZip', async (path, ignore) => {
 	return new Promise((resolve) => {
-
 		JSZip.loadAsync(fs.readFileSync(path)).then(async function (zip) {
 			var files = [];
 
@@ -43,11 +42,9 @@ exports('createPath', async (path) => {
 })
 
 exports('getBuild', async () => {
-	var version = GetConvar('version');
-
 	try {
 		const regex = /v1\.0\.0\.(\d{4,5})\s*/;
-		const res = regex.exec(version);
+		const res = regex.exec(GetConvar('version'));
 
 		return parseInt(res[1]);
 	} catch (error) {

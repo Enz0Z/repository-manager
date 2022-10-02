@@ -25,6 +25,11 @@ CreateThread(function()
 			return
 		end
 		local changelog = json.decode(raw)
+
+		if not changelog then
+			print('^7Cannot retrieve artifact version from fivem endpoint.')
+			return
+		end
 		local current = exports[GetCurrentResourceName()]:getBuild()
 		local last = changelog.latest
 
