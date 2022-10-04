@@ -1,4 +1,5 @@
 RESOURCES_PATH = ''
+base64 = load(LoadResourceFile(GetCurrentResourceName(), 'server/base64.lua'))()
 
 CreateThread(function()
 	local path = ''
@@ -114,10 +115,9 @@ function GetService(repository)
 					elseif string.find(self.repository.url, 'gitlab') then
 						url = 'https://gitlab.com/api/v4/projects/' .. self.components[2] .. '%2F' .. self.components[3] .. '/repository/archive.zip?sha=' .. self.last_commit
 					end
-					Write(GetResourcePath(GetCurrentResourceName()) .. '/.dump', Get(url, {
-						['Authorization'] = self.repository.token
-					}))
-					return exports[GetCurrentResourceName()]:getFilesInZip(GetResourcePath(GetCurrentResourceName()) .. '/.dump', self.repository.ignore or {})
+					local dump = Get(url, { ['Authorization'] = self.repository.token })
+
+					return exports[GetCurrentResourceName()]:getFilesInZip(base64.encode(dump), self.repository.ignore or {})
 				end
 			}
 		}

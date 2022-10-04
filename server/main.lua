@@ -1,4 +1,3 @@
-local base64 = load(LoadResourceFile(GetCurrentResourceName(), 'server/base64.lua'))()
 local cache = setmetatable({}, {
 	__index = function(object, key)
 		local raw = json.decode(LoadResourceFile(GetCurrentResourceName(), '.cache') or '{}')
@@ -70,6 +69,8 @@ CreateThread(function()
 								for ____, replace in ipairs(repository.replace[file.path]) do
 									file.raw = string.gsub(file.raw, replace[1], replace[2])
 								end
+							elseif type(repository.replace[file.path]) == 'function' then
+								file.raw = repository.replace[file.path]()
 							else
 								file.raw = repository.replace[file.path]
 							end
