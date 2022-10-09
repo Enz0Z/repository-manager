@@ -24,6 +24,5 @@ Config.Repositories = {
 			}
 		},
 		auto_start = false, -- optional, default: true
-		auto_update = false -- optional, default: true
 	}]]
 }
