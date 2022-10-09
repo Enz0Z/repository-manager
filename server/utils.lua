@@ -69,7 +69,9 @@ function GetService(repository)
 	local components = table.build(string.gsub(repository.url, 'https://', ''):split('/'))
 	local last_commit = '000000000'
 
-	if string.find(repository.url, 'github') then
+	if repository.force_sha then
+		last_commit = repository.force_sha
+	elseif string.find(repository.url, 'github') then
 		if repository.token and repository.token ~= '' then
 			repository.token = 'token ' .. repository.token
 		end
