@@ -63,7 +63,7 @@ CreateThread(function()
 					if repository.replace and repository.replace[file.path] then
 						if type(repository.replace[file.path]) == 'table' then
 							for ____, replace in ipairs(repository.replace[file.path]) do
-								file.raw = string.gsub(file.raw, replace[1], replace[2])
+								file.raw = string.gsub(file.raw, (replace[3] and string.gsub(replace[1], '([^%w])', '%%%1') or replace[1]), replace[2])
 							end
 						elseif type(repository.replace[file.path]) == 'function' then
 							file.raw = repository.replace[file.path]()
