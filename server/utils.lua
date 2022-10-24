@@ -31,6 +31,15 @@ function table.build(iter)
 	return t_k, t_v
 end
 
+function table.find(t, cb)
+	for i = 1, #t, 1 do
+		if cb(t[i]) then
+			return t[i]
+		end
+	end
+	return nil
+end
+
 function Write(destination, raw)
 	if os.getenv('OS') == 'Windows_NT' then
 		exports[GetCurrentResourceName()]:createPath(destination)
@@ -72,7 +81,7 @@ function GetService(repository)
 	if repository.force_sha then
 		last_commit = repository.force_sha
 	elseif string.find(repository.url, 'github') then
-		if repository.token and repository.token ~= '' then
+		if repository.token and repository.token ~= '' and not string.find(repository.token, 'token') then
 			repository.token = 'token ' .. repository.token
 		end
 		local response = Get('https://api.github.com/repos/' .. components[2] .. '/' .. components[3] .. '/commits/' .. (repository.branch or 'master'), {
@@ -86,7 +95,7 @@ function GetService(repository)
 		local contents = json.decode(response)
 		last_commit = contents.sha
 	elseif string.find(repository.url, 'gitlab') then
-		if repository.token and repository.token ~= '' then
+		if repository.token and repository.token ~= '' and not string.find(repository.token, 'Bearer') then
 			repository.token = 'Bearer ' .. repository.token
 		end
 		local response = Get('https://gitlab.com/api/v4/projects/' .. components[2] .. '%2F' .. components[3] .. '/repository/commits?ref_name=' .. (repository.branch or 'master'), {
