@@ -40,6 +40,15 @@ function table.find(t, cb)
 	return nil
 end
 
+function table.size(t)
+	local count = 0
+
+	for _, __ in pairs(t) do
+		count = count + 1
+	end
+	return count
+end
+
 function Write(destination, raw)
 	if os.getenv('OS') == 'Windows_NT' then
 		exports[GetCurrentResourceName()]:createPath(destination)

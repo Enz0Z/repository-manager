@@ -51,11 +51,22 @@ local update = function(repository)
 				end
 				Wait(50)
 			end
+			local count = 1
+
+			for path, action in pairs(repository.inject or {}) do
+				Write(destination .. '/' .. path, (type(action) == 'function' and action() or action))
+				if Config.Verbose then
+					print('^7' .. repository.name .. ' injected ' .. path .. ' [' .. count .. '/' .. table.size(repository.inject) .. '].')
+				end
+				count = count + 1
+			end
 			print('^7' .. repository.name .. ' updated to commit ^2' .. service.last_commit .. '^7.')
 			cache[repository.name] = service.last_commit
 			updated = true
 		else
-			print('^7' .. repository.name .. ' is up to date.')
+			if Config.Verbose then
+				print('^7' .. repository.name .. ' is up to date.')
+			end
 		end
 	end
 	return updated
