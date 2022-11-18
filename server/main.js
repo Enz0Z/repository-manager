@@ -1,9 +1,9 @@
 const fs = require('fs');
 const JSZip = require('./server/jszip.min.js');
 
-exports('getFilesInZip', async (dump, ignore) => {
+exports('getFilesInZip', async (path, ignore) => {
 	return new Promise((resolve) => {
-		JSZip.loadAsync(dump, { base64: true }).then(async function (zip) {
+		JSZip.loadAsync(fs.readFileSync(path)).then(async function (zip) {
 			var files = [];
 
 			for (const filename in zip.files) {

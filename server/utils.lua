@@ -1,5 +1,21 @@
 RESOURCES_PATH = ''
 base64 = load(LoadResourceFile(GetCurrentResourceName(), 'server/base64.lua'))()
+cache = setmetatable({}, {
+	__index = function(object, key)
+		local raw = json.decode(LoadResourceFile(GetCurrentResourceName(), '.cache') or '{}')
+
+		if not key then
+			return raw
+		end
+		return raw[key]
+	end,
+	__newindex = function(object, key, value)
+		local raw = json.decode(LoadResourceFile(GetCurrentResourceName(), '.cache') or '{}')
+		raw[key] = value
+
+		SaveResourceFile(GetCurrentResourceName(), '.cache', json.encode(raw), -1)
+	end
+})
 
 CreateThread(function()
 	local path = ''
@@ -93,9 +109,7 @@ function GetService(repository)
 		if repository.token and repository.token ~= '' and not string.find(repository.token, 'token') then
 			repository.token = 'token ' .. repository.token
 		end
-		local response = Get('https://api.github.com/repos/' .. components[2] .. '/' .. components[3] .. '/commits/' .. (repository.branch or 'master'), {
-			['Authorization'] = repository.token
-		})
+		local response = Get('https://api.github.com/repos/' .. components[2] .. '/' .. components[3] .. '/commits/' .. (repository.branch or 'master'), { ['Authorization'] = repository.token })
 
 		if not response then
 			print('^7Could not retrieve last commit from ' .. repository.url .. ' (' .. repository.branch .. '): ' .. response .. '.')
@@ -107,9 +121,7 @@ function GetService(repository)
 		if repository.token and repository.token ~= '' and not string.find(repository.token, 'Bearer') then
 			repository.token = 'Bearer ' .. repository.token
 		end
-		local response = Get('https://gitlab.com/api/v4/projects/' .. components[2] .. '%2F' .. components[3] .. '/repository/commits?ref_name=' .. (repository.branch or 'master'), {
-			['Authorization'] = repository.token
-		})
+		local response = Get('https://gitlab.com/api/v4/projects/' .. components[2] .. '%2F' .. components[3] .. '/repository/commits?ref_name=' .. (repository.branch or 'master'), { ['Authorization'] = repository.token })
 
 		if not response then
 			print('^7Could not retrieve last commit from ' .. repository.url .. ' (' .. repository.branch .. '): ' .. response .. '.')
@@ -128,16 +140,19 @@ function GetService(repository)
 		{
 			__index = {
 				archive = function(self)
-					local url = ''
+					local path = GetResourcePath(GetCurrentResourceName()) .. '/.dumps/' .. self.last_commit
 
-					if string.find(self.repository.url, 'github') then
-						url = 'https://github.com/' .. self.components[2] .. '/' .. self.components[3] .. '/archive/' .. self.last_commit .. '.zip'
-					elseif string.find(self.repository.url, 'gitlab') then
-						url = 'https://gitlab.com/api/v4/projects/' .. self.components[2] .. '%2F' .. self.components[3] .. '/repository/archive.zip?sha=' .. self.last_commit
+					if not io.open(path, 'r') then
+						local url = ''
+
+						if string.find(self.repository.url, 'github') then
+							url = 'https://github.com/' .. self.components[2] .. '/' .. self.components[3] .. '/archive/' .. self.last_commit .. '.zip'
+						elseif string.find(self.repository.url, 'gitlab') then
+							url = 'https://gitlab.com/api/v4/projects/' .. self.components[2] .. '%2F' .. self.components[3] .. '/repository/archive.zip?sha=' .. self.last_commit
+						end
+						Write(path, Get(url, { ['Authorization'] = self.repository.token }))
 					end
-					local dump = Get(url, { ['Authorization'] = self.repository.token })
-
-					return exports[GetCurrentResourceName()]:getFilesInZip(base64.encode(dump), self.repository.ignore or {})
+					return exports[GetCurrentResourceName()]:getFilesInZip(path, self.repository.ignore or {})
 				end
 			}
 		}

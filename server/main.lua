@@ -1,19 +1,3 @@
-local cache = setmetatable({}, {
-	__index = function(object, key)
-		local raw = json.decode(LoadResourceFile(GetCurrentResourceName(), '.cache') or '{}')
-
-		if not key then
-			return raw
-		end
-		return raw[key]
-	end,
-	__newindex = function(object, key, value)
-		local raw = json.decode(LoadResourceFile(GetCurrentResourceName(), '.cache') or '{}')
-		raw[key] = value
-
-		SaveResourceFile(GetCurrentResourceName(), '.cache', json.encode(raw), -1)
-	end
-})
 local update = function(repository)
 	local service = GetService(repository)
 	local updated = false
