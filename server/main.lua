@@ -58,6 +58,7 @@ local update = function(repository)
 end
 
 CreateThread(function()
+	exports[GetCurrentResourceName()]:CreatePath(GetResourcePath(GetCurrentResourceName()) .. '/.dumps/')
 	if Config.Artifact.check then
 		local raw = Get('https://changelogs-live.fivem.net/api/changelog/versions/' .. (os.getenv('OS') == 'Windows_NT' and 'windows' or 'linux') .. '/server')
 
@@ -71,7 +72,7 @@ CreateThread(function()
 			print('^7Cannot retrieve artifact version from fivem endpoint.')
 			return
 		end
-		local current = exports[GetCurrentResourceName()]:getBuild()
+		local current = exports[GetCurrentResourceName()]:GetBuild()
 		local last = changelog.latest
 
 		if tonumber(current) ~= tonumber(last) then

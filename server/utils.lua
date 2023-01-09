@@ -66,7 +66,7 @@ end
 
 function Write(destination, raw)
 	if os.getenv('OS') == 'Windows_NT' then
-		exports[GetCurrentResourceName()]:createPath(destination)
+		exports[GetCurrentResourceName()]:CreatePath(destination)
 		local file = io.open(destination:gsub('/', '\\'), 'wb')
 
 		if file then
@@ -74,7 +74,7 @@ function Write(destination, raw)
 			file:close()
 		end
 	else
-		exports[GetCurrentResourceName()]:createPath(destination)
+		exports[GetCurrentResourceName()]:CreatePath(destination)
 		local file = io.open(destination:gsub('/', '//'):gsub('////', '//'), 'wb')
 
 		if file then

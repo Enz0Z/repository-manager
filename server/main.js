@@ -68,11 +68,11 @@ exports('GenerateBin', async (path, url, self) => {
 	})
 })
 
-exports('createPath', async (path) => {
+exports('CreatePath', async (path) => {
 	fs.mkdirSync(path.substring(0, path.lastIndexOf('/') + 1), { recursive: true });
 })
 
-exports('getBuild', async () => {
+exports('GetBuild', async () => {
 	try {
 		const regex = /v1\.0\.0\.(\d{4,5})\s*/;
 		const res = regex.exec(GetConvar('version'));
