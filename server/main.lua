@@ -13,37 +13,38 @@ local update = function(repository)
 			else
 				os.execute(('rm -rf %s'):format(destination))
 			end
-			local files = service:archive()
 
-			for __, file in ipairs(files) do
-				file.raw = base64.decode(file.raw)
+			for line in io.lines(service:archive()) do
+				Wait(50)
+				local result = json.decode('[' .. string.gsub(line, ':', ',', 1) .. ']')
+				local path = result[1]
+				local raw = result[2]
 
-				if repository.replace and repository.replace[file.path] then
-					if type(repository.replace[file.path]) == 'table' then
-						for ____, replace in ipairs(repository.replace[file.path]) do
-							file.raw = string.gsub(file.raw, (replace[3] and string.gsub(replace[1], '([^%w])', '%%%1') or replace[1]), replace[2])
+				if repository.replace and repository.replace[path] then
+					if type(repository.replace[path]) == 'table' then
+						for ____, replace in ipairs(repository.replace[path]) do
+							raw = string.gsub(raw, (replace[3] and string.gsub(replace[1], '([^%w])', '%%%1') or replace[1]), replace[2])
 						end
-					elseif type(repository.replace[file.path]) == 'function' then
-						file.raw = repository.replace[file.path](file.raw)
+					elseif type(repository.replace[path]) == 'function' then
+						raw = repository.replace[path](raw)
 					else
-						file.raw = repository.replace[file.path]
+						raw = repository.replace[path]
 					end
 				end
-				Write(destination .. '/' .. file.path, file.raw)
+				Write(destination .. '/' .. path, raw)
 				if Config.Verbose then
-					print('^7' .. repository.name .. ' saved ' .. file.path .. ' [' .. __ .. '/' .. #files .. '].')
+					print('^7' .. repository.name .. ' saved ' .. path .. '.')
 				end
-				Wait(50)
 			end
-			local count = 1
 
 			for path, action in pairs(repository.inject or {}) do
+				Wait(50)
 				Write(destination .. '/' .. path, (type(action) == 'function' and action() or action))
 				if Config.Verbose then
-					print('^7' .. repository.name .. ' injected ' .. path .. ' [' .. count .. '/' .. table.size(repository.inject) .. '].')
+					print('^7' .. repository.name .. ' injected ' .. path .. '.')
 				end
-				count = count + 1
 			end
+
 			print('^7' .. repository.name .. ' updated to commit ^2' .. service.last_commit .. '^7.')
 			cache[repository.name] = service.last_commit
 			updated = true

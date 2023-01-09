@@ -1,5 +1,4 @@
 RESOURCES_PATH = ''
-base64 = load(LoadResourceFile(GetCurrentResourceName(), 'server/base64.lua'))()
 cache = setmetatable({}, {
 	__index = function(object, key)
 		local raw = json.decode(LoadResourceFile(GetCurrentResourceName(), '.cache') or '{}')
@@ -141,18 +140,15 @@ function GetService(repository)
 			__index = {
 				archive = function(self)
 					local path = GetResourcePath(GetCurrentResourceName()) .. '/.dumps/' .. self.last_commit
+					local url = ''
 
-					if not io.open(path, 'r') then
-						local url = ''
-
-						if string.find(self.repository.url, 'github') then
-							url = 'https://github.com/' .. self.components[2] .. '/' .. self.components[3] .. '/archive/' .. self.last_commit .. '.zip'
-						elseif string.find(self.repository.url, 'gitlab') then
-							url = 'https://gitlab.com/api/v4/projects/' .. self.components[2] .. '%2F' .. self.components[3] .. '/repository/archive.zip?sha=' .. self.last_commit
-						end
-						Write(path, Get(url, { ['Authorization'] = self.repository.token }))
+					if string.find(self.repository.url, 'github') then
+						url = 'https://codeload.github.com/' .. self.components[2] .. '/' .. self.components[3] .. '/zip/' .. self.last_commit
+					elseif string.find(self.repository.url, 'gitlab') then
+						url = 'https://gitlab.com/api/v4/projects/' .. self.components[2] .. '%2F' .. self.components[3] .. '/repository/archive.zip?sha=' .. self.last_commit
 					end
-					return exports[GetCurrentResourceName()]:getFilesInZip(path, self.repository.ignore or {})
+					exports[GetCurrentResourceName()]:GenerateBin(path, url, self)
+					return path .. '.bin'
 				end
 			}
 		}
