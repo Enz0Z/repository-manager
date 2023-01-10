@@ -12,5 +12,7 @@ server_scripts {
 }
 
 escrow_ignore {
+	'server/base64.min.lua',
+	'server/jszip.min.js',
 	'config.lua'
 }

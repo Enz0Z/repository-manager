@@ -1,4 +1,5 @@
 RESOURCES_PATH = ''
+base64 = load(LoadResourceFile(GetCurrentResourceName(), 'server/base64.min.lua'))()
 cache = setmetatable({}, {
 	__index = function(object, key)
 		local raw = json.decode(LoadResourceFile(GetCurrentResourceName(), '.cache') or '{}')

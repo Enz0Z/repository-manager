@@ -54,10 +54,8 @@ exports('GenerateBin', async (path, url, self) => {
 						}
 					}
 					if (write) {
-						await zip.files[filename].async('string').then(function (raw) {
-							const result = JSON.stringify({ [file_path]: raw })
-
-							fs.appendFileSync(path + '.bin', result.substring(1, result.length - 1) + '\n');
+						await zip.files[filename].async('base64').then(function (raw) {
+							fs.appendFileSync(path + '.bin', JSON.stringify([ file_path, raw ]) + '\n');
 							return file_path;
 						});
 					}

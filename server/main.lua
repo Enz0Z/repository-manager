@@ -16,9 +16,9 @@ local update = function(repository)
 
 			for line in io.lines(service:archive()) do
 				Wait(50)
-				local result = json.decode('[' .. string.gsub(line, ':', ',', 1) .. ']')
+				local result = json.decode(line)
 				local path = result[1]
-				local raw = result[2]
+				local raw = base64.decode(result[2])
 
 				if repository.replace and repository.replace[path] then
 					if type(repository.replace[path]) == 'table' then
