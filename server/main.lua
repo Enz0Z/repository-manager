@@ -96,6 +96,7 @@ CreateThread(function()
 		end
 	end
 	print('^7Checking repositories...')
+
 	for _, repository in ipairs(Config.Repositories) do
 		if repository.auto_start == nil then
 			repository.auto_start = true
@@ -111,6 +112,11 @@ CreateThread(function()
 			else
 				ExecuteCommand('start ' .. repository.name)
 			end
+		end
+		if repository.restart_server and updated then
+			print('^7' .. repository.name .. ' it is configured to restart the server when it is updated.')
+			ExecuteCommand('quit "' .. repository.name .. ' it is configured to restart the server when it is updated.' .. '"')
+			break
 		end
 	end
 	print('^7All repositories up to date.')
