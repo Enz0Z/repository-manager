@@ -38,27 +38,11 @@ exports('GenerateBin', async (path, url, self) => {
 				for (const filename in zip.files) {
 					if (zip.files[filename].dir) continue;
 					var file_path = filename.substring(filename.indexOf('/') + 1, filename.length);
-					var ignore = self.repository.ignore;
-					var write = true;
 
-					for (let i = 0; i < ignore.length; i++) {
-						const name = ignore[i];
-
-						if (name.endsWith('/') && file_path.startsWith(name)) {
-							write = false;
-							break;
-						}
-						if (file_path == name) {
-							write = false;
-							break;
-						}
-					}
-					if (write) {
-						await zip.files[filename].async('base64').then(function (raw) {
-							fs.appendFileSync(path + '.bin', JSON.stringify([ file_path, raw ]) + '\n');
-							return file_path;
-						});
-					}
+					await zip.files[filename].async('base64').then(function (raw) {
+						fs.appendFileSync(path + '.bin', JSON.stringify([ file_path, raw ]) + '\n');
+						return file_path;
+					});
 				}
 				resolve();
 			})

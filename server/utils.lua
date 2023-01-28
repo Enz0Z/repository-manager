@@ -1,6 +1,6 @@
 RESOURCES_PATH = ''
-base64 = load(LoadResourceFile(GetCurrentResourceName(), 'server/base64.min.lua'))()
-cache = setmetatable({}, {
+BASE_64 = load(LoadResourceFile(GetCurrentResourceName(), 'server/base64.min.lua'))()
+CACHE = setmetatable({}, {
 	__index = function(object, key)
 		local raw = json.decode(LoadResourceFile(GetCurrentResourceName(), '.cache') or '{}')
 
@@ -65,6 +65,14 @@ function table.size(t)
 	return count
 end
 
+function string:startsWith(start)
+	return self:sub(1, #start) == start
+end
+
+function string:endsWith(ending)
+	return ending == '' or self:sub(-#ending) == ending
+end
+
 function Write(destination, raw)
 	if os.getenv('OS') == 'Windows_NT' then
 		exports[GetCurrentResourceName()]:CreatePath(destination)
@@ -103,6 +111,7 @@ function GetService(repository)
 	local components = table.build(string.gsub(repository.url, 'https://', ''):split('/'))
 	local last_commit = '000000000'
 
+	if not repository.ignore then repository.ignore = {} end
 	if repository.force_sha then
 		last_commit = repository.force_sha
 	elseif string.find(repository.url, 'github') then
