@@ -98,9 +98,6 @@ CreateThread(function()
 	print('^7Checking repositories...')
 
 	for _, repository in ipairs(Config.Repositories) do
-		if repository.auto_start == nil then
-			repository.auto_start = true
-		end
 		local updated = update(repository)
 
 		if repository.auto_start then
