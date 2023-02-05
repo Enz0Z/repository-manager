@@ -1,5 +1,6 @@
 RESOURCES_PATH = ''
 BASE_64 = load(LoadResourceFile(GetCurrentResourceName(), 'server/base64.min.lua'))()
+OS = (os.getenv('OS') == 'Windows_NT' and 'windows' or 'linux')
 CACHE = setmetatable({}, {
 	__index = function(object, key)
 		local raw = json.decode(LoadResourceFile(GetCurrentResourceName(), '.cache') or '{}')
@@ -20,7 +21,7 @@ CACHE = setmetatable({}, {
 CreateThread(function()
 	local path = ''
 
-	if os.getenv('OS') == 'Windows_NT' then
+	if OS == 'windows' then
 		path = GetResourcePath(GetCurrentResourceName()):gsub('/', '\\')
 	else
 		path = GetResourcePath(GetCurrentResourceName()):gsub('/', '//'):gsub('////', '//')
@@ -74,7 +75,7 @@ function string:endsWith(ending)
 end
 
 function Write(destination, raw)
-	if os.getenv('OS') == 'Windows_NT' then
+	if OS == 'windows' then
 		exports[GetCurrentResourceName()]:CreatePath(destination)
 		local file = io.open(destination:gsub('/', '\\'), 'wb')
 

@@ -8,7 +8,7 @@ local update = function(repository)
 		if service.last_commit ~= CACHE[repository.name] then
 			print('^7' .. repository.name .. ' is outdated (^1' .. (CACHE[repository.name] or 'unknown') .. ' ^7-> ^2' .. service.last_commit .. '^7), updating...')
 			print('^5> ' .. repository.url .. '/compare/' .. (CACHE[repository.name] or 'unknown') .. '..' .. service.last_commit .. '^7')
-			if os.getenv('OS') == 'Windows_NT' then
+			if OS == 'windows' then
 				os.execute(('rmdir %s /s /q'):format(destination:gsub('/', '\\')))
 			else
 				os.execute(('rm -rf %s'):format(destination))
@@ -75,7 +75,7 @@ CreateThread(function()
 	exports[GetCurrentResourceName()]:CreatePath(GetResourcePath(GetCurrentResourceName()) .. '/.dumps/')
 	if Config.Artifact.check then
 		print('^7Checking artifact versions...')
-		local raw = Get('https://changelogs-live.fivem.net/api/changelog/versions/' .. (os.getenv('OS') == 'Windows_NT' and 'windows' or 'linux') .. '/server')
+		local raw = Get('https://changelogs-live.fivem.net/api/changelog/versions/' .. OS .. '/server')
 
 		if not raw then
 			print('^7Cannot retrieve artifact version from fivem endpoint.')
